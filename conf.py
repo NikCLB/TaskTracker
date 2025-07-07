@@ -2,8 +2,6 @@ import os
 from dataclasses import dataclass
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, MetaData
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
 from aiogram import Bot
 from enum import Enum
 
@@ -21,12 +19,14 @@ class ActionType(Enum):
 @dataclass
 class DatabaseConf:
     host = os.environ.get('DB_HOST')
+    port = os.environ.get('DB_PORT')
     databaseName = os.environ.get('DB_NAME')
-    username = os.environ.get('DB_USERNAME', 'root')
-    password = os.environ.get('DB_PASSWORD', 'admin')
-    dbURL = f'mysql+pymysql://{username}@localhost/{databaseName}'
+    username = os.environ.get('DB_USERNAME')
+    password = os.environ.get('DB_PASSWORD')
+    dbURL = f'mysql+pymysql://{username}:{password}@{host}:{port}/{databaseName}'
     engine = create_engine(dbURL)
     metadata = MetaData()
+
 
 @dataclass
 class CocurrentTasks:

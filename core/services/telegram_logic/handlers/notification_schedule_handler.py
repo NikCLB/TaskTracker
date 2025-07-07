@@ -41,8 +41,8 @@ class NotificationScheduleHandler:
 
     async def _checkPendingSchedule(self):
         while True:
-            schedule.run_pending()
-            asyncio.sleep(1)
+            await schedule.run_pending()
+            await asyncio.sleep(1)
 
 
     async def turnOnTaskNotifications(self):

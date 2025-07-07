@@ -1,11 +1,11 @@
-from core.services.database_manager import mantisDatabase
+# from core.services.database_manager import mantisDatabase
 from aiogram import Dispatcher, types
 import asyncio
 from conf import config
 import logging
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.storage.redis import RedisStorage
+# from aiogram.fsm.storage.redis import RedisStorage
 from core.services.telegram_logic.inline_keyboards import InlineButtonsFactory
 from core.services.telegram_logic.handlers.sign_in_handler import signInRouter
 from core.services.telegram_logic.handlers.active_tasks_handler import activeTasksRouter
@@ -43,8 +43,8 @@ async def handle_start(message: types.Message, state: FSMContext):
 async def main():
     logging.basicConfig(level=logging.DEBUG)
     telegramTask = asyncio.create_task(dp.start_polling(config.telegram.bot))
-    scheduleNotificationTask = asyncio.create_task(NotificationScheduleHandler().turnOnTaskNotifications)
-    config.concurrentTasks.tasks.append(telegramTask, scheduleNotificationTask)
+    scheduleNotificationTask = asyncio.create_task(NotificationScheduleHandler().turnOnTaskNotifications())
+    config.concurrentTasks.tasks.extend([telegramTask, scheduleNotificationTask])
     try:
         await asyncio.gather(*config.concurrentTasks.tasks)
     except asyncio.CancelledError:
