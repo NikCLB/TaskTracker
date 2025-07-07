@@ -166,3 +166,5 @@ profile_path/*
 
 #Credentials
 core/creds/*
+
+.env
