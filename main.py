@@ -1,7 +1,7 @@
 # from core.services.database_manager import mantisDatabase
 from aiogram import Dispatcher, types
 import asyncio
-from conf import config
+from conf import config, ActionType
 import logging
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
@@ -34,7 +34,7 @@ async def handle_start(message: types.Message, state: FSMContext):
         Так же по кнопке ты сможешь посмотреть свои активные задачи и перевести их в следующий статус по воркфлоу.
         Так же посмотреть статистику с начала месяца
         """,
-        reply_markup=await InlineButtonsFactory.createInlineKeyboard("SignIn")
+        reply_markup=await InlineButtonsFactory.createInlineKeyboard(ActionType.SignIn)
     )
 
     await message.delete()

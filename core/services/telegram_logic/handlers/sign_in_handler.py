@@ -6,8 +6,8 @@ from core.services.telegram_logic.callback_data import SignInCallback
 from aiogram.fsm.context import FSMContext
 from core.services.telegram_logic.fsm import SignInStates
 from aiogram.types import Message
-from core.services.soap_manager import SoapClient
-from core.services.xml_manager import XMLManager
+from core.services.soap_manager import soapClient
+from core.services.xml_manager import xmlManager
 from core.services.database_manager import mantisDatabase
 from core.services.telegram_logic.inline_keyboards import InlineButtonsFactory
 from conf import ActionType
@@ -39,14 +39,17 @@ async def ask_for_password(
     await message.delete()
 
 
-@signInRouter.message(SignInStates.usernameField)
+@signInRouter.message(SignInStates.passwordField)
 async def handleLogin(
     message: Message,
     state: FSMContext
 ) -> None:
     await state.update_data(passwordField=message.text)
-    response = asyncio.to_thread(SoapClient.makeSignUpRequest)
-    user_id: str = asyncio.to_thread(XMLManager.parseXMLResponseForID, response)
+    data = await state.get_data()
+    username = data.get("usernameField")
+    password = data.get("passwordField")
+    response = await asyncio.to_thread(soapClient.makeSignUpRequest, username, password)
+    user_id: str = await asyncio.to_thread(xmlManager.parseXMLResponseForID, response)
     if user_id is None:
         await message.answer(
             text="Wrong credentials",
