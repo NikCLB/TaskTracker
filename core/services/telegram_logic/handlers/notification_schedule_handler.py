@@ -4,7 +4,7 @@ import pytz
 from core.services.database_manager import mantisDatabase
 from core.services.telegram_logic.inline_keyboards import InlineButtonsFactory
 import asyncio
-from conf import config, TASK_DAY_TIMES_ROW
+from conf import config, TASK_DAY_TIMES_ROW, ActionType
 from core.services.telegram_logic.fsm import StatesFabric
 
 
@@ -26,7 +26,7 @@ class NotificationScheduleHandler:
         global TASK_DAY_TIMES_ROW 
         for user in condorUsersWithTelegram:
             TASK_DAY_TIMES_ROW = asyncio.to_thread(mantisDatabase.getTodaysNotTrackedTasks, user.user_id)
-            inlineKeyboard = asyncio.to_thread(InlineButtonsFactory.createInlineKeyboard, "ActiveTasks", TASK_DAY_TIMES_ROW)
+            inlineKeyboard = asyncio.to_thread(InlineButtonsFactory.createInlineKeyboard, ActionType.ActiveTasksAction, TASK_DAY_TIMES_ROW)
             StatesFabric.createTaskStates()
             await self._sendInlineTasksNotifications(user.chat_id, inlineKeyboard)
 

@@ -1,4 +1,4 @@
-from zeep import Client
+from zeep import Client, Transport, Settings
 
 
 class SoapClient:
@@ -7,12 +7,16 @@ class SoapClient:
         self._client: None | Client = None
 
     def makeSignUpRequest(self, username: str, password: str) -> str:
-        wdslLink = self._wsdl_root + "/api/soap/mantisconnect.php"
-        self._client = Client(wdslLink)
+        wsdl_url  = self._wsdl_root + "/api/soap/mantisconnect.wsdl"
+        real_endpoint = f"{self._wsdl_root}/api/soap/mantisconnect.php"
+        settings = Settings(strict=False)
+        self._client = Client(wsdl=wsdl_url, settings=settings)
+        self._client.service._binding_options['address'] = real_endpoint    
         try:
             response = self._client.service.mc_login(username=username, password=password)
             return response
         except Exception as e:
             print(f'Произошла ошибка: {e}')
+            return None
 
 soapClient = SoapClient()

@@ -98,6 +98,7 @@ class MantisDatabase:
             try:
                 query = update(self._tasksDaytimes).where(self._tasksDaytimes.c.id == task_id).values(devs_working_hours=working_hours)
                 result = connection.execute(query)
+                print(result)
                 return result
             except Exception as e:
                 print(f"Ошибка '{e}' при выполнении запроса")

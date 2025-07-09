@@ -7,7 +7,6 @@ from aiogram.fsm.context import FSMContext
 from core.services.telegram_logic.fsm import SignInStates
 from aiogram.types import Message
 from core.services.soap_manager import soapClient
-from core.services.xml_manager import xmlManager
 from core.services.database_manager import mantisDatabase
 from core.services.telegram_logic.inline_keyboards import InlineButtonsFactory
 from conf import ActionType
@@ -49,16 +48,16 @@ async def handleLogin(
     username = data.get("usernameField")
     password = data.get("passwordField")
     response = await asyncio.to_thread(soapClient.makeSignUpRequest, username, password)
-    user_id: str = await asyncio.to_thread(xmlManager.parseXMLResponseForID, response)
-    if user_id is None:
+    if response is None:
         await message.answer(
             text="Wrong credentials",
             reply_markup=await InlineButtonsFactory.createInlineKeyboard(ActionType.SignIn)
         )
         await message.delete()
         return
+    user_id: int = response.account_data.id
     chat_id: int = message.chat.id
-    asyncio.to_thread(mantisDatabase.insertTelegramChatIDForUser, chat_id, user_id)
+    await asyncio.to_thread(mantisDatabase.insertTelegramChatIDForUser, chat_id, user_id)
     await message.answer(
         text="Личный кабинет",
         reply_markup=await InlineButtonsFactory.createInlineKeyboard(ActionType.CustomerMainMenu)
