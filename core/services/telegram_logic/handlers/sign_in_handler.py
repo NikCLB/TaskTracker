@@ -10,6 +10,7 @@ from core.services.soap_manager import soapClient
 from core.services.database_manager import mantisDatabase
 from core.services.telegram_logic.inline_keyboards import InlineButtonsFactory
 from conf import ActionType
+from  typing import Any
 
 
 signInRouter = Router(name="Sign In")
@@ -18,11 +19,11 @@ signInRouter = Router(name="Sign In")
     F.request == "sign_in"
 ))
 async def handle_sign_in(query: CallbackQuery, state: FSMContext) -> None:
-    await query.message.answer(
+    await query.message.answer( # type: ignore
         text="Type down your MantisBT username"
     )
     await state.set_state(SignInStates.usernameField)
-    await query.message.delete()
+    await query.message.delete() # type: ignore
 
 
 @signInRouter.message(SignInStates.usernameField)
@@ -45,8 +46,8 @@ async def handleLogin(
 ) -> None:
     await state.update_data(passwordField=message.text)
     data = await state.get_data()
-    username = data.get("usernameField")
-    password = data.get("passwordField")
+    username: Any | None = data.get("usernameField")
+    password: Any | None = data.get("passwordField")
     response = await asyncio.to_thread(soapClient.makeSignUpRequest, username, password)
     if response is None:
         await message.answer(
@@ -55,11 +56,11 @@ async def handleLogin(
         )
         await message.delete()
         return
-    user_id: int = response.account_data.id
+    user_id: int = response.account_data.id # type: ignore
     chat_id: int = message.chat.id
     await asyncio.to_thread(mantisDatabase.insertTelegramChatIDForUser, chat_id, user_id)
     await message.answer(
-        text="Личный кабинет",
+        text="Personal Account",
         reply_markup=await InlineButtonsFactory.createInlineKeyboard(ActionType.CustomerMainMenu)
     )
     await message.delete()

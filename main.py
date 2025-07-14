@@ -9,6 +9,7 @@ from aiogram.fsm.context import FSMContext
 from core.services.telegram_logic.inline_keyboards import InlineButtonsFactory
 from core.services.telegram_logic.handlers.sign_in_handler import signInRouter
 from core.services.telegram_logic.handlers.active_tasks_handler import activeTasksRouter
+from core.services.telegram_logic.handlers.track_tasks_handler import trackTasksRouter
 from core.services.telegram_logic.handlers.notification_schedule_handler import NotificationScheduleHandler
 from aiogram.fsm.storage.memory import MemoryStorage
 
@@ -22,11 +23,12 @@ dp = Dispatcher(storage=storage)
 
 dp.include_router(signInRouter)
 dp.include_router(activeTasksRouter)
+dp.include_router(trackTasksRouter)
 
 @dp.message(CommandStart())
 async def handle_start(message: types.Message, state: FSMContext):
 
-    md = await message.answer(
+    await message.answer(
         text="""
         Привет! Этот бот в конце дня будет присылать тебе оповещения с твоими активными задачами.
         Необходимо будет отметить какое кол-во часов ты потратил за текущий день на задачу.

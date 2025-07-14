@@ -6,11 +6,13 @@ from core.services.telegram_logic.inline_keyboards import InlineButtonsFactory
 import asyncio
 from conf import config, TASK_DAY_TIMES_ROW, ActionType
 from core.services.telegram_logic.fsm import StatesFabric
+from typing import List
 
 
 class NotificationScheduleHandler:
 
     utc_time = "17:30"
+    tasks_message: str = ""
 
     async def _setschedule(self):
         now_utc = datetime.now(pytz.utc)
@@ -18,17 +20,23 @@ class NotificationScheduleHandler:
         job_datetime = now_utc.replace(hour=job_time.hour, minute=job_time.minute, second=0, microsecond=0)
         if job_datetime < now_utc:
             job_datetime += timedelta(days=1)
-        schedule.every().day.at(job_datetime.strftime("%H:%M")).do(self._trackTasks)
+        schedule.every().day.at(job_datetime.strftime("%H:%M")).do(self._trackTasks) # type: ignore
 
 
     async def _trackTasks(self):
-        condorUsersWithTelegram = mantisDatabase.getCondorUsersWithTelegram()
+        condorUsersWithTelegram = await mantisDatabase.getCondorUsersWithTelegram() # type: ignore
         global TASK_DAY_TIMES_ROW 
-        for user in condorUsersWithTelegram:
-            TASK_DAY_TIMES_ROW = asyncio.to_thread(mantisDatabase.getTodaysNotTrackedTasks, user.user_id)
-            inlineKeyboard = asyncio.to_thread(InlineButtonsFactory.createInlineKeyboard, ActionType.ActiveTasksAction, TASK_DAY_TIMES_ROW)
-            StatesFabric.createTaskStates()
-            await self._sendInlineTasksNotifications(user.chat_id, inlineKeyboard)
+        for user in condorUsersWithTelegram: # type: ignore
+            TASK_DAY_TIMES_ROW = asyncio.to_thread(mantisDatabase.getTodaysNotTrackedTasks, user.user_id) # type: ignore
+            inlineKeyboard = asyncio.to_thread(InlineButtonsFactory.createInlineKeyboard, ActionType.ActiveTasksAction, TASK_DAY_TIMES_ROW) # type: ignore
+            StatesFabric.createTaskStates() # type: ignore
+            await self._sendInlineTasksNotifications(user.chat_id, inlineKeyboard) # type: ignore
+
+
+    async def _formTasksMessage(self, dev_id: int):
+        tasks_names: List[str] = mantisDatabase.getTodaysNotTrackedTasks(dev_id) # type: ignore
+        for task_name in enumerate(tasks_names, start=1):
+            self.tasks_message += f"{index}: {task_name}\n"
 
 
     async def _sendInlineTasksNotifications(self,  chat_id, inlineKeyboard):

@@ -17,5 +17,9 @@ class TrackTasksCallBack(CallbackData, prefix="notification_tasks"):
     request: str
 
 
-class AcitveTasksCallback(CallbackData, prefix="active_tasks"):
+class ActiveTasksCallback(CallbackData, prefix="active_tasks"):
+    request: str
+
+
+class BackCallBack(CallbackData, prefix='back'):
     request: str

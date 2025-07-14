@@ -1,9 +1,12 @@
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, MetaData
 from aiogram import Bot
 from enum import Enum
+from aiogram.types.inline_keyboard_markup import InlineKeyboardMarkup
+from typing import Dict
+
 
 load_dotenv()
 
@@ -15,6 +18,8 @@ class ActionType(Enum):
     ActiveTasksAction = 2
     CustomerMainMenu = 3
     SignIn = 4
+    Back = 5
+
 
 @dataclass
 class DatabaseConf:
@@ -36,7 +41,7 @@ class CocurrentTasks:
 @dataclass
 class TelegramBot:
     token = os.environ.get("TELEGRAM_TOKEN")
-    bot = Bot(token=token)
+    bot = Bot(token=token) # type: ignore
 
 
 @dataclass
@@ -47,6 +52,9 @@ class Redis:
 
 @dataclass
 class Configuration:
+    taskInlineKeyboard: InlineKeyboardMarkup | None = None
+    taskMessage: str = ""
+    taskHourStorage: Dict[str, int]  = field(default_factory=dict) # type: ignore
     telegram = TelegramBot()
     database = DatabaseConf()
     redis = Redis()

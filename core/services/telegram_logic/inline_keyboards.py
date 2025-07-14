@@ -1,13 +1,14 @@
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types.inline_keyboard_markup import InlineKeyboardMarkup
-from core.services.telegram_logic.callback_data import MainMenuCallback, SignInCallback, TrackTasksCallBack, AcitveTasksCallback
-from typing import List, Any
+from core.services.telegram_logic.callback_data import MainMenuCallback, SignInCallback, TrackTasksCallBack, ActiveTasksCallback, BackCallBack
+from typing import Any, Sequence
 from conf import ActionType
+from sqlalchemy.engine import Row
 
 
 class InlineButtonsFactory:
     @staticmethod
-    async def createInlineKeyboard(buttonType: str, mantisTasksDaytimesRows: List[Any] = None):
+    async def createInlineKeyboard(buttonType: ActionType, mantisTasksDaytimesRows: Sequence[Row[Any]] =[]) -> InlineKeyboardMarkup:
         if buttonType == ActionType.TrackTasksAction:
             return await NotificationTasksKeyboard.createInlineKeyboard(mantisTasksDaytimesRows)
         if buttonType == ActionType.ActiveTasksAction:
@@ -16,7 +17,36 @@ class InlineButtonsFactory:
             return await MainMenuKeyboard.createInlineKeyboard()
         if buttonType == ActionType.SignIn:
             return await SignInKeyboard.createInlineKeyboard()
+        if buttonType == ActionType.Back:
+            return await SignInKeyboard.createInlineKeyboard()
+        else:
+            return await EmptyKeyboard.createInlineKeyboard()
 
+
+class BackKeyborad:
+    @staticmethod
+    async def createInlineKeyboard() -> InlineKeyboardMarkup:
+        inlineKeyboardBuilder = InlineKeyboardBuilder()
+        inlineKeyboardBuilder.button(
+            text='Back',
+            callback_data=SignInCallback(
+                request='back'
+            )
+        )
+        return inlineKeyboardBuilder.as_markup()
+
+
+class EmptyKeyboard:
+    @staticmethod
+    async def createInlineKeyboard() -> InlineKeyboardMarkup:
+        inlineKeyboardBuilder = InlineKeyboardBuilder()
+        inlineKeyboardBuilder.button(
+            text='Error',
+            callback_data=SignInCallback(
+                request='error'
+            )
+        )
+        return inlineKeyboardBuilder.as_markup()
 
 class SignInKeyboard:
     @staticmethod
@@ -37,14 +67,14 @@ class MainMenuKeyboard:
         inlineKeyboardBuilder = InlineKeyboardBuilder()
 
         inlineKeyboardBuilder.button(
-            text='Текущие задачи',
-            callback_data=MainMenuCallback(
-                request='active_tasks'
+            text='Task track',
+            callback_data=TrackTasksCallBack(
+                request='task_track_start'
             )
         )
 
         inlineKeyboardBuilder.button(
-            text='Статистика за месяц',
+            text='Month stats',
             callback_data=MainMenuCallback(
                 request='month_stats'
             )
@@ -55,18 +85,18 @@ class MainMenuKeyboard:
 
 class ActiveTasksKeyboard:
     @staticmethod
-    async def createInlineKeyboard(mantisTasksDaytimesRows: List[Any]) -> InlineKeyboardMarkup:
+    async def createInlineKeyboard(mantisTasksDaytimesRows: Sequence[Row[Any]]) -> InlineKeyboardMarkup:
         inlineKeyboardBuilder = InlineKeyboardBuilder()
         for taskRow in mantisTasksDaytimesRows:
             inlineKeyboardBuilder.button(
                 text=taskRow.task_name,
-                callback_data=AcitveTasksCallback(
+                callback_data=ActiveTasksCallback(
                     request=taskRow.id
                 )
             )
         inlineKeyboardBuilder.button(
             text="Back",
-            callback_data=AcitveTasksCallback(
+            callback_data=BackCallBack(
                 request="Back"
             )
         ) 
@@ -75,19 +105,25 @@ class ActiveTasksKeyboard:
 
 class NotificationTasksKeyboard:
     @staticmethod
-    async def createInlineKeyboard(mantisTasksDaytimesRows: List[Any]) -> InlineKeyboardMarkup:
+    async def createInlineKeyboard(mantisTasksDaytimesRows: Sequence[Row[Any]]) -> InlineKeyboardMarkup:
         inlineKeyboardBuilder = InlineKeyboardBuilder()
         for taskRow in mantisTasksDaytimesRows:
             inlineKeyboardBuilder.button(
-                text=taskRow.task_name,
+                text=str(taskRow.task_id),
                 callback_data=TrackTasksCallBack(
-                    request=taskRow.id
+                    request=str(taskRow.task_id)
                 )
             )
         inlineKeyboardBuilder.button(
             text="Track",
             callback_data=TrackTasksCallBack(
                 request="Track"
+            )
+        )
+        inlineKeyboardBuilder.button(
+            text="Main menu",
+            callback_data=TrackTasksCallBack(
+                request="Menu"
             )
         )
         return inlineKeyboardBuilder.as_markup() 
