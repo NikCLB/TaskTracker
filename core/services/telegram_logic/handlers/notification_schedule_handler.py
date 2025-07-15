@@ -5,7 +5,6 @@ from core.services.database_manager import mantisDatabase
 from core.services.telegram_logic.inline_keyboards import InlineButtonsFactory
 import asyncio
 from conf import config, TASK_DAY_TIMES_ROW, ActionType
-from core.services.telegram_logic.fsm import StatesFabric
 from typing import List
 
 

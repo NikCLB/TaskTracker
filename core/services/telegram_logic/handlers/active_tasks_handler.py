@@ -3,7 +3,7 @@ from aiogram import Router
 from aiogram.types import CallbackQuery
 from aiogram import F
 # from aiogram.types import Message
-from core.services.telegram_logic.callback_data import MainMenuCallback, AcitveTasksCallback
+from core.services.telegram_logic.callback_data import MainMenuCallback, ActiveTasksCallback
 from core.services.database_manager import mantisDatabase
 from core.services.telegram_logic.inline_keyboards import InlineButtonsFactory
 import asyncio
@@ -25,11 +25,11 @@ async def handle_active_task_request(query: CallbackQuery):
     )
 
 
-@activeTasksRouter.callback_query(AcitveTasksCallback.filter(
+@activeTasksRouter.callback_query(ActiveTasksCallback.filter(
     F.request == "Back"
 ))
 async def back_button(query: CallbackQuery):
     await query.message.answer( # type: ignore
         text="Back",
-        reply_markup=await InlineButtonsFactory.createInlineKeyboard("MainMenu")
+        reply_markup=await InlineButtonsFactory.createInlineKeyboard(ActionType.Back)
     )
