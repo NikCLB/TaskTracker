@@ -25,17 +25,33 @@ async def backToMenu(query: CallbackQuery): # type: ignore
         text="Main menu",
         reply_markup=await InlineButtonsFactory.createInlineKeyboard(ActionType.CustomerMainMenu)
     )
+    await query.message.delete() # type: ignore
 
 
 @trackTasksRouter.callback_query(TrackTasksCallBack.filter(
-    F.request == "Track"
+    F.request == "back"
+))
+async def backToTasks(query: CallbackQuery, state: FSMContext): # type: ignore
+    await state.clear()
+    await query.message.answer( # type: ignore
+        text=config.taskMessage,
+        reply_markup=config.taskInlineKeyboard
+    )
+    await query.message.delete() # type: ignore
+
+
+@trackTasksRouter.callback_query(TrackTasksCallBack.filter(
+    F.request == "batch_track"
 ))
 async def backToMenu(query: CallbackQuery):
-    await asyncio.to_thread(mantisDatabase.insertWorkingHours)
+    await asyncio.to_thread(mantisDatabase.insertBatchWorkingHours)
+    config.taskHourStorage.clear()
     await query.message.answer( # type: ignore
         text="All tasks have been tracked succesfully. Now back to main menu",
         reply_markup=await InlineButtonsFactory.createInlineKeyboard(ActionType.CustomerMainMenu)
     )
+    await query.message.delete() # type: ignore
+
 
 
 @trackTasksRouter.callback_query(TrackTasksCallBack.filter(
@@ -51,6 +67,7 @@ async def getTodaysUntrackedTasks(query: CallbackQuery):
         if len(todaysUserTasksRows) != 0:
             config.taskMessage = ""
             for taskRow in todaysUserTasksRows:
+                config.taskHourStorage[taskRow.task_id] = 0
                 config.taskMessage += f"{taskRow.task_id}: {taskRow.task_name}\n"
             config.taskInlineKeyboard = await InlineButtonsFactory.createInlineKeyboard(
                 ActionType.TrackTasksAction, todaysUserTasksRows
@@ -73,6 +90,8 @@ async def getTodaysUntrackedTasks(query: CallbackQuery):
                     ActionType.CustomerMainMenu
                 )
             )
+    
+    await query.message.delete() # type: ignore
 
 
 @trackTasksRouter.callback_query(lambda c: TrackTasksCallBack.filter(c.data)) # type: ignore
@@ -84,9 +103,10 @@ async def sendRequestToTrackTask(query: CallbackQuery, state: FSMContext): # typ
     await query.message.answer( # type: ignore
         text="Send me an integer ammount of hours spent on that task today.",
         reply_markup= await InlineButtonsFactory.createInlineKeyboard(
-            ActionType.CustomerMainMenu
+            ActionType.Back
         )
     ) # type: ignore
+    await query.message.delete() # type: ignore
 
 
 @trackTasksRouter.message(TasksStates.taskTimeSpend)
@@ -96,8 +116,9 @@ async def saveTimeSpend(
 ):
     await state.update_data(taskTimeSpend=message.text)
     data = await state.get_data()
-    config.dailyTaskHourStorage[data["taskIdField"]] = data["taskTimeSpend"] # type: ignore
+    config.taskHourStorage[data["taskIdField"]] = data["taskTimeSpend"] # type: ignore
     await message.answer(
         text=config.taskMessage,
         reply_markup=config.taskInlineKeyboard
     )
+    await message.delete() # type: ignore

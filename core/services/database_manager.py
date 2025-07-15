@@ -131,18 +131,20 @@ class MantisDatabase:
             except Exception as e:
                 print(f"Ошибка '{e}' при выполнении запроса")
 
-
-    @overload       
-    def insertWorkingHours(self) -> Row[Any]:
+     
+    def insertBatchWorkingHours(self) -> Row[Any] | None:
         with self._engine.begin() as connection:
             try:
+                current_date = datetime.now().date()
+                formatted_date = current_date.strftime("%Y-%m-%d")
                 for key in config.taskHourStorage.keys():
                     query = update(
                         self._tasksDaytimes
                     ).where(
                         self._tasksDaytimes.c.task_id == key
                     ).values(
-                        devs_working_hours=config.taskHourStorage[key]
+                        devs_working_hours=config.taskHourStorage[key],
+                        last_time_track=formatted_date
                     )
                     connection.execute(query)
             except Exception as e:

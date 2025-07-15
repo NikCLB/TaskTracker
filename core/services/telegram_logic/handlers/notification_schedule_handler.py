@@ -39,7 +39,7 @@ class NotificationScheduleHandler:
 
 
     async def _sendInlineTasksNotifications(self,  chat_id, inlineKeyboard):
-        config.telegram.bot.send_message(
+        await config.telegram.bot.send_message(
             chat_id=chat_id,
             text="Нажми на задачу что бы указать затраченное время",
             reply_markup=inlineKeyboard

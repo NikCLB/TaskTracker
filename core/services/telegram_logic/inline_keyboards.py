@@ -1,6 +1,6 @@
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types.inline_keyboard_markup import InlineKeyboardMarkup
-from core.services.telegram_logic.callback_data import MainMenuCallback, SignInCallback, TrackTasksCallBack, ActiveTasksCallback, BackCallBack
+from core.services.telegram_logic.callback_data import SignInCallback, TrackTasksCallBack, ActiveTasksCallback, BackCallBack
 from typing import Any, Sequence
 from conf import ActionType
 from sqlalchemy.engine import Row
@@ -18,7 +18,7 @@ class InlineButtonsFactory:
         if buttonType == ActionType.SignIn:
             return await SignInKeyboard.createInlineKeyboard()
         if buttonType == ActionType.Back:
-            return await SignInKeyboard.createInlineKeyboard()
+            return await BackKeyborad.createInlineKeyboard()
         else:
             return await EmptyKeyboard.createInlineKeyboard()
 
@@ -29,7 +29,7 @@ class BackKeyborad:
         inlineKeyboardBuilder = InlineKeyboardBuilder()
         inlineKeyboardBuilder.button(
             text='Back',
-            callback_data=SignInCallback(
+            callback_data=TrackTasksCallBack(
                 request='back'
             )
         )
@@ -67,19 +67,11 @@ class MainMenuKeyboard:
         inlineKeyboardBuilder = InlineKeyboardBuilder()
 
         inlineKeyboardBuilder.button(
-            text='Task track',
+            text='Track Tasks',
             callback_data=TrackTasksCallBack(
                 request='task_track_start'
             )
         )
-
-        inlineKeyboardBuilder.button(
-            text='Month stats',
-            callback_data=MainMenuCallback(
-                request='month_stats'
-            )
-        )
-        inlineKeyboardBuilder.adjust(1, 1)
         return inlineKeyboardBuilder.as_markup()
 
 
@@ -115,13 +107,13 @@ class NotificationTasksKeyboard:
                 )
             )
         inlineKeyboardBuilder.button(
-            text="Track",
+            text="Batch Track",
             callback_data=TrackTasksCallBack(
-                request="Track"
+                request="batch_track"
             )
         )
         inlineKeyboardBuilder.button(
-            text="Main menu",
+            text="Main Menu",
             callback_data=TrackTasksCallBack(
                 request="Menu"
             )

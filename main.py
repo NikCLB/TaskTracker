@@ -30,11 +30,17 @@ async def handle_start(message: types.Message, state: FSMContext):
 
     await message.answer(
         text="""
-        Привет! Этот бот в конце дня будет присылать тебе оповещения с твоими активными задачами.
-        Необходимо будет отметить какое кол-во часов ты потратил за текущий день на задачу.
-        Если на какой то задаче не поставить кол-во часов, система засчитаеть ноль.
-        Так же по кнопке ты сможешь посмотреть свои активные задачи и перевести их в следующий статус по воркфлоу.
-        Так же посмотреть статистику с начала месяца
+            Hi! Ideally this bot will send you a daily notification with your active tasks at the end of the day.
+            BUT
+            For now it is not yet implemented
+            BUT
+            You can do it on your own!
+            Go ahead and press button
+            You'll need to indicate how many hours you spent on each task for the current day.
+            If you don’t enter hours for a task, the system will assume zero.
+            By the end press BATCH TRACK and all answers would be uploaded to db.
+            Each day it is only one try. Don't fuck up.
+            Before BATCH TRACK you can rewrite your values as much as you want.
         """,
         reply_markup=await InlineButtonsFactory.createInlineKeyboard(ActionType.SignIn)
     )
@@ -44,15 +50,15 @@ async def handle_start(message: types.Message, state: FSMContext):
 
 async def main():
     logging.basicConfig(level=logging.DEBUG)
-    telegramTask = asyncio.create_task(dp.start_polling(config.telegram.bot))
+    telegramTask = asyncio.create_task(dp.start_polling(config.telegram.bot)) # type: ignore
     scheduleNotificationTask = asyncio.create_task(NotificationScheduleHandler().turnOnTaskNotifications())
-    config.concurrentTasks.tasks.extend([telegramTask, scheduleNotificationTask])
+    config.concurrentTasks.tasks.extend([telegramTask, scheduleNotificationTask]) # type: ignore
     try:
-        await asyncio.gather(*config.concurrentTasks.tasks)
+        await asyncio.gather(*config.concurrentTasks.tasks) # type: ignore
     except asyncio.CancelledError:
-        for task in config.concurrentTasks.tasks:
-            task.cancel()
-        await asyncio.gather(*config.concurrentTasks.tasks, return_exceptions=True)
+        for task in config.concurrentTasks.tasks: # type: ignore
+            task.cancel() # type: ignore
+        await asyncio.gather(*config.concurrentTasks.tasks, return_exceptions=True) # type: ignore
 
 
 if __name__ == "__main__":
