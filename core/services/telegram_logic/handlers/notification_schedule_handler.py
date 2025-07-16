@@ -32,26 +32,26 @@ class NotificationScheduleHandler:
             await self._sendInlineTasksNotifications(user.chat_id, inlineKeyboard) # type: ignore
 
 
-    async def _formTasksMessage(self, dev_id: int):
-        tasks_names: List[str] = mantisDatabase.getTodaysNotTrackedTasks(dev_id) # type: ignore
-        for task_name in enumerate(tasks_names, start=1):
-            self.tasks_message += f"{index}: {task_name}\n"
+    # async def _formTasksMessage(self, dev_id: int):
+    #     tasks_names: List[str] = mantisDatabase.getTodaysNotTrackedTasks(dev_id) # type: ignore
+    #     for index, task_name in enumerate(tasks_names, start=1):
+    #         self.tasks_message += f"{index}: {task_name}\n"
 
 
-    async def _sendInlineTasksNotifications(self,  chat_id, inlineKeyboard):
-        await config.telegram.bot.send_message(
-            chat_id=chat_id,
-            text="Нажми на задачу что бы указать затраченное время",
-            reply_markup=inlineKeyboard
-        )
+    # async def _sendInlineTasksNotifications(self,  chat_id, inlineKeyboard):
+    #     await config.telegram.bot.send_message(
+    #         chat_id=chat_id,
+    #         text="Нажми на задачу что бы указать затраченное время",
+    #         reply_markup=inlineKeyboard
+    #     )
 
 
-    async def _checkPendingSchedule(self):
-        while True:
-            await schedule.run_pending()
-            await asyncio.sleep(1)
+    # async def _checkPendingSchedule(self):
+    #     while True:
+    #         await schedule.run_pending()
+    #         await asyncio.sleep(1)
 
 
-    async def turnOnTaskNotifications(self):
-        await self._setschedule()
-        await self._checkPendingSchedule()
+    # async def turnOnTaskNotifications(self):
+    #     await self._setschedule()
+    #     await self._checkPendingSchedule()
