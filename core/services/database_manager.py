@@ -1,11 +1,11 @@
-from sqlalchemy import Table, select, Engine, CursorResult, update, insert, case, or_
+from sqlalchemy import Table, select, Engine, CursorResult, update, insert, or_
 from sqlalchemy.engine import Row
 from conf import config
 from typing import List, Sequence
-from datetime import datetime, date
-from typing import TypeVar, Any, overload, List, Optional
-from core.services.telegram_logic.fsm import TasksStates
-from aiogram.fsm.state import State
+from datetime import datetime
+from typing import TypeVar, Any, overload, List
+# from core.services.telegram_logic.fsm import TasksStates
+# from aiogram.fsm.state import State
 
 
 _T = TypeVar("_T", bound=Any)
@@ -16,18 +16,6 @@ class MantisDatabase:
         self._users: Table = Table('mantis_user_table', config.database.metadata, autoload_with=self._engine)
         self._tasksDaytimes: Table = Table('mantis_tasks_daytimes', config.database.metadata, autoload_with=config.database.engine)
         self._condorUserTelegram: Table = Table('mantis_condor_user_telegram', config.database.metadata, autoload_with=config.database.engine)
-
-
-    # @staticmethod
-    # def transactional(method):
-    #     def wrapper(self, *args, **kwargs):
-    #         with self._engine.begin() as connection:
-    #             self._connection = connection
-    #             try:
-    #                 return method(self, *args, **kwargs)
-    #             finally:
-    #                 self._connection = None
-    #     return wrapper
 
 
     def getCondorUsers(self) -> List[CursorResult[_T]]:
@@ -132,18 +120,18 @@ class MantisDatabase:
                 print(f"Ошибка '{e}' при выполнении запроса")
 
      
-    def insertBatchWorkingHours(self) -> Row[Any] | None:
+    def insertBatchWorkingHours(self, chat_id: int) -> Row[Any] | None:
         with self._engine.begin() as connection:
             try:
                 current_date = datetime.now().date()
                 formatted_date = current_date.strftime("%Y-%m-%d")
-                for key in config.taskHourStorage.keys():
+                for key in config.taskHourStorage[chat_id]["tasks"].keys(): # type: ignore
                     query = update(
                         self._tasksDaytimes
                     ).where(
-                        self._tasksDaytimes.c.task_id == key
+                        self._tasksDaytimes.c.task_id == key # type: ignore
                     ).values(
-                        devs_working_hours=config.taskHourStorage[key],
+                        devs_working_hours=config.taskHourStorage[chat_id]["tasks"][key], # type: ignore
                         last_time_track=formatted_date
                     )
                     connection.execute(query)

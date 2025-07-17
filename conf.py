@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine, MetaData
 from aiogram import Bot
 from enum import Enum
-from aiogram.types.inline_keyboard_markup import InlineKeyboardMarkup
 from typing import Dict
 
 
@@ -52,9 +51,7 @@ class Redis:
 
 @dataclass
 class Configuration:
-    taskInlineKeyboard: InlineKeyboardMarkup | None = None
-    taskMessage: str = ""
-    taskHourStorage: Dict[str, int]  = field(default_factory=dict) # type: ignore
+    taskHourStorage: Dict[int, Dict[str, Any]]  = field(default_factory=dict) # type: ignore
     telegram = TelegramBot()
     database = DatabaseConf()
     redis = Redis()

@@ -51,8 +51,9 @@ async def handle_start(message: types.Message, state: FSMContext):
 async def main():
     logging.basicConfig(level=logging.DEBUG)
     telegramTask = asyncio.create_task(dp.start_polling(config.telegram.bot)) # type: ignore
-    scheduleNotificationTask = asyncio.create_task(NotificationScheduleHandler().turnOnTaskNotifications())
-    config.concurrentTasks.tasks.extend([telegramTask, scheduleNotificationTask]) # type: ignore
+    # scheduleNotificationTask = asyncio.create_task(NotificationScheduleHandler().turnOnTaskNotifications())
+    # config.concurrentTasks.tasks.extend([telegramTask, scheduleNotificationTask]) # type: ignore
+    config.concurrentTasks.tasks.append(telegramTask) # type: ignore
     try:
         await asyncio.gather(*config.concurrentTasks.tasks) # type: ignore
     except asyncio.CancelledError:

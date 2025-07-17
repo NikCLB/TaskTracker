@@ -33,9 +33,11 @@ async def backToMenu(query: CallbackQuery): # type: ignore
 ))
 async def backToTasks(query: CallbackQuery, state: FSMContext): # type: ignore
     await state.clear()
+    chat_id: int = query.message.chat.id # type: ignore
+
     await query.message.answer( # type: ignore
-        text=config.taskMessage,
-        reply_markup=config.taskInlineKeyboard
+        text=config.taskHourStorage[chat_id]["taskMessage"], # type: ignore
+        reply_markup=config.taskHourStorage[chat_id]["tasksInlineKeyboard"] # type: ignore
     )
     await query.message.delete() # type: ignore
 
@@ -44,8 +46,9 @@ async def backToTasks(query: CallbackQuery, state: FSMContext): # type: ignore
     F.request == "batch_track"
 ))
 async def backToMenu(query: CallbackQuery):
-    await asyncio.to_thread(mantisDatabase.insertBatchWorkingHours)
-    config.taskHourStorage.clear()
+    chat_id: int = query.message.chat.id # type: ignore
+    await asyncio.to_thread(mantisDatabase.insertBatchWorkingHours(chat_id))
+    del config.taskHourStorage[chat_id] # type: ignore
     await query.message.answer( # type: ignore
         text="All tasks have been tracked succesfully. Now back to main menu",
         reply_markup=await InlineButtonsFactory.createInlineKeyboard(ActionType.CustomerMainMenu)
@@ -65,16 +68,26 @@ async def getTodaysUntrackedTasks(query: CallbackQuery):
             mantisDatabase.getTodaysNotTrackedTasks, currentUserRow[1]
         ) # type: ignore
         if len(todaysUserTasksRows) != 0:
-            config.taskMessage = ""
+
+            config.taskHourStorage[chat_id] = { # type: ignore
+                "taskMessage": "",
+                "tasks": {},
+                "tasksInlineKeyboard": None
+            } # type: ignore
+            taskMessage = ""
             for taskRow in todaysUserTasksRows:
-                config.taskHourStorage[taskRow.task_id] = 0
-                config.taskMessage += f"{taskRow.task_id}: {taskRow.task_name}\n"
-            config.taskInlineKeyboard = await InlineButtonsFactory.createInlineKeyboard(
+                config.taskHourStorage[chat_id]["tasks"][taskRow.task_id] = 0 # type: ignore
+                taskMessage += f"{taskRow.task_id}: {taskRow.task_name}\n"
+
+            config.taskHourStorage[chat_id]["taskMessage"] = taskMessage # type: ignore
+
+            taskInlineKeyboard = await InlineButtonsFactory.createInlineKeyboard(
                 ActionType.TrackTasksAction, todaysUserTasksRows
             )
+            config.taskHourStorage[chat_id]["tasksInlineKeyboard"] = taskInlineKeyboard # type: ignore
             await query.message.answer( # type: ignore
-                text=config.taskMessage,
-                reply_markup=config.taskInlineKeyboard
+                text=taskMessage,
+                reply_markup=taskInlineKeyboard
             )
         else:
             await query.message.answer( # type: ignore
@@ -115,10 +128,11 @@ async def saveTimeSpend(
     state: FSMContext
 ):
     await state.update_data(taskTimeSpend=message.text)
+    chat_id: int = message.chat.id
     data = await state.get_data()
-    config.taskHourStorage[data["taskIdField"]] = data["taskTimeSpend"] # type: ignore
+    config.taskHourStorage[chat_id]["tasks"][data["taskIdField"]] = data["taskTimeSpend"] # type: ignore
     await message.answer(
-        text=config.taskMessage,
-        reply_markup=config.taskInlineKeyboard
+        text=config.taskHourStorage[chat_id]["taskMessage"], # type: ignore
+        reply_markup=config.taskHourStorage[chat_id]["tasksInlineKeyboard"] # type: ignore
     )
     await message.delete() # type: ignore
