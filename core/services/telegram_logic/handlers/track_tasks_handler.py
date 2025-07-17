@@ -47,7 +47,7 @@ async def backToTasks(query: CallbackQuery, state: FSMContext): # type: ignore
 ))
 async def backToMenu(query: CallbackQuery):
     chat_id: int = query.message.chat.id # type: ignore
-    await asyncio.to_thread(mantisDatabase.insertBatchWorkingHours(chat_id))
+    await asyncio.to_thread(mantisDatabase.insertBatchWorkingHours, chat_id)
     del config.taskHourStorage[chat_id] # type: ignore
     await query.message.answer( # type: ignore
         text="All tasks have been tracked succesfully. Now back to main menu",
@@ -76,7 +76,6 @@ async def getTodaysUntrackedTasks(query: CallbackQuery):
             } # type: ignore
             taskMessage = ""
             for taskRow in todaysUserTasksRows:
-                config.taskHourStorage[chat_id]["tasks"][taskRow.task_id] = 0 # type: ignore
                 taskMessage += f"{taskRow.task_id}: {taskRow.task_name}\n"
 
             config.taskHourStorage[chat_id]["taskMessage"] = taskMessage # type: ignore
@@ -130,7 +129,7 @@ async def saveTimeSpend(
     await state.update_data(taskTimeSpend=message.text)
     chat_id: int = message.chat.id
     data = await state.get_data()
-    config.taskHourStorage[chat_id]["tasks"][data["taskIdField"]] = data["taskTimeSpend"] # type: ignore
+    config.taskHourStorage[chat_id]["tasks"][int(data["taskIdField"])] = data["taskTimeSpend"] # type: ignore
     await message.answer(
         text=config.taskHourStorage[chat_id]["taskMessage"], # type: ignore
         reply_markup=config.taskHourStorage[chat_id]["tasksInlineKeyboard"] # type: ignore

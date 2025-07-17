@@ -126,12 +126,13 @@ class MantisDatabase:
                 current_date = datetime.now().date()
                 formatted_date = current_date.strftime("%Y-%m-%d")
                 for key in config.taskHourStorage[chat_id]["tasks"].keys(): # type: ignore
+                    value = int(config.taskHourStorage[chat_id]["tasks"][key])
                     query = update(
                         self._tasksDaytimes
                     ).where(
                         self._tasksDaytimes.c.task_id == key # type: ignore
                     ).values(
-                        devs_working_hours=config.taskHourStorage[chat_id]["tasks"][key], # type: ignore
+                        devs_working_hours=value, # type: ignore
                         last_time_track=formatted_date
                     )
                     connection.execute(query)
