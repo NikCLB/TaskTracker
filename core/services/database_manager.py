@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from sqlalchemy import Table, select, Engine, CursorResult, update, insert, or_
 from sqlalchemy.engine import Row
 from conf import config

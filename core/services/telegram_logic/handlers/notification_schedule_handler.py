@@ -6,11 +6,11 @@ from core.services.telegram_logic.inline_keyboards import InlineButtonsFactory
 import asyncio
 from conf import config, TASK_DAY_TIMES_ROW, ActionType
 from typing import List
-
+from core.services.telegram_logic.handlers.track_tasks_handler import getTodaysUntrackedTasks
 
 class NotificationScheduleHandler:
 
-    utc_time = "17:30"
+    utc_time = "18:00"
     tasks_message: str = ""
 
     async def _setschedule(self):
@@ -19,7 +19,7 @@ class NotificationScheduleHandler:
         job_datetime = now_utc.replace(hour=job_time.hour, minute=job_time.minute, second=0, microsecond=0)
         if job_datetime < now_utc:
             job_datetime += timedelta(days=1)
-        schedule.every().day.at(job_datetime.strftime("%H:%M")).do(self._trackTasks) # type: ignore
+        schedule.every().day.at(job_datetime.strftime("%H:%M")).do(getTodaysUntrackedTasks) # type: ignore
 
 
     async def _trackTasks(self):
@@ -52,6 +52,6 @@ class NotificationScheduleHandler:
     #         await asyncio.sleep(1)
 
 
-    # async def turnOnTaskNotifications(self):
-    #     await self._setschedule()
-    #     await self._checkPendingSchedule()
+    async def turnOnTaskNotifications(self):
+         await self._setschedule()
+         ##await self._checkPendingSchedule()

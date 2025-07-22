@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine, MetaData
 from aiogram import Bot
 from enum import Enum
-from typing import Dict
+from typing import Dict, Any
 
 
 load_dotenv()
